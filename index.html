@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ne">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Esunrise Education - GitHub Pages Template</title>
+  <meta name="description" content="Simple, responsive educational website template for GitHub Pages. Notes, quizzes, past questions, resources." />
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+  <style>
+    :root{--bg:#f7fafc;--card:#ffffff;--accent:#2563eb;--muted:#6b7280}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;background:var(--bg);color:#111}
+    header{background:linear-gradient(90deg,#0ea5e9,#6366f1);color:#fff;padding:18px}
+    .container{max-width:1000px;margin:18px auto;padding:0 16px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand h1{font-size:20px;margin:0}
+    nav{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+    nav a{color:rgba(255,255,255,0.95);text-decoration:none;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.06)}
+
+    .grid{display:grid;grid-template-columns:1fr 330px;gap:18px}
+    @media(max-width:880px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(16,24,40,0.06)}
+
+    .search{display:flex;gap:8px;margin-bottom:12px}
+    .search input{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e9ef}
+    .btn{display:inline-block;padding:8px 12px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+
+    .list-item{padding:12px;border-radius:8px;border:1px solid #eef2ff;margin-bottom:10px}
+    .meta{font-size:13px;color:var(--muted)}
+
+    aside .box{margin-bottom:12px}
+    footer{max-width:1000px;margin:24px auto 60px;padding:0 16px;color:var(--muted)}
+
+    /* small helper styles for markdown content */
+    .md-content h2{margin-top:18px}
+    .md-content pre{background:#111827;color:#f8fafc;padding:12px;border-radius:8px;overflow:auto}
+    .tag{display:inline-block;padding:6px 8px;border-radius:999px;background:#eef2ff;color:#1e3a8a;font-size:13px;margin-right:6px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="brand">
+        <div style="width:48px;height:48px;border-radius:10px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-weight:700">ES</div>
+        <div>
+          <h1>Esunrise Education</h1>
+          <div style="font-size:13px;opacity:0.9">Notes · Quizzes · Past Questions · Resources</div>
+        </div>
+      </div>
+      <nav style="margin-top:10px">
+        <a href="#home" data-link>Home</a>
+        <a href="#notes" data-link>Notes</a>
+        <a href="#quizzes" data-link>Quizzes</a>
+        <a href="#past" data-link>Past Questions</a>
+        <a href="#resources" data-link>Resources</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" id="app">
+    <div class="grid">
+      <section>
+        <div class="card" id="main-card">
+          <div class="search">
+            <input id="search" placeholder="Search notes / questions ..." />
+            <button class="btn" id="searchBtn">Search</button>
+          </div>
+
+          <div id="content-list">
+            <!-- JS will render lists here -->
+          </div>
+
+          <div id="page-content" class="md-content" style="margin-top:12px;display:none"></div>
+        </div>
+
+      </section>
+
+      <aside>
+        <div class="box card">
+          <h3>Quick Links</h3>
+          <div style="margin-top:8px">
+            <div class="meta">Add your notes as Markdown files inside <code>/content/</code> and update <code>content/pages.json</code>.</div>
+          </div>
+        </div>
+
+        <div class="box card">
+          <h3>Categories</h3>
+          <div style="margin-top:8px">
+            <span class="tag">Biology</span><span class="tag">Chemistry</span><span class="tag">Physics</span>
+            <span class="tag">B.Pharm</span>
+          </div>
+        </div>
+
+        <div class="box card">
+          <h3>How to add</h3>
+          <ol style="padding-left:18px;margin:0">
+            <li>Create Markdown file: <code>content/biology-note-1.md</code></li>
+            <li>Edit <code>content/pages.json</code> and add an entry for the file</li>
+            <li>Commit & push to GitHub — done!</li>
+          </ol>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div>Template ready for GitHub Pages • Edit content in <code>/content</code> folder</div>
+    </div>
+  </footer>
+
+  <!-- marked.js from CDN for rendering Markdown -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    // Simple static content loader that reads a JSON index and fetches markdown files.
+    // -------------------------
+    // DEFAULT SAMPLE DATA (replace with content/pages.json in your repo)
+    const SAMPLE_INDEX = [
+      {"id":"note-bio-1","title":"Biology - Cell Structure","type":"note","path":"/content/biology-cell-structure.md","tags":["Biology","Cell"]},
+      {"id":"past-2066-chem","title":"Past Question: B.Pharm 2066 - Chemistry","type":"past","path":"/content/past-2066-chem.md","tags":["Past","Chemistry"]},
+      {"id":"quiz-1","title":"Quiz: Basic Pharmacology","type":"quiz","path":"/content/quiz-pharm-1.md","tags":["Quiz"]}
+    ];
+
+    // Attempt to fetch content/pages.json from server; fallback to SAMPLE_INDEX
+    async function loadIndex(){
+      try{
+        const res = await fetch('/content/pages.json');
+        if(!res.ok) throw new Error('no index');
+        const j = await res.json();
+        return j;
+      }catch(e){
+        return SAMPLE_INDEX;
+      }
+    }
+
+    function el(tag, attrs={}, txt=''){ const e = document.createElement(tag); for(const k in attrs) e.setAttribute(k, attrs[k]); if(txt) e.textContent=txt; return e }
+
+    function renderList(items){
+      const container = document.getElementById('content-list'); container.innerHTML='';
+      items.forEach(it=>{
+        const div = el('div',{class:'list-item'});
+        const h = el('div'); h.innerHTML = `<strong>${it.title}</strong>`;
+        const m = el('div',{class:'meta'},`${it.type.toUpperCase()} • ${it.tags.join(', ')}`);
+        const openBtn = el('button',{class:'btn'},'Open');
+        openBtn.style.marginTop='8px';
+        openBtn.onclick = ()=>openContent(it);
+        div.appendChild(h); div.appendChild(m); div.appendChild(openBtn);
+        container.appendChild(div);
+      })
+    }
+
+    async function openContent(item){
+      const pc = document.getElementById('page-content');
+      pc.style.display = 'block';
+      pc.innerHTML = '<em>Loading...</em>';
+      try{
+        const res = await fetch(item.path);
+        if(!res.ok) throw new Error('Unable to load file: '+item.path);
+        const md = await res.text();
+        pc.innerHTML = marked.parse(md);
+        window.location.hash = item.id;
+      }catch(e){
+        pc.innerHTML = `<div class="card"><strong>Error</strong><div class="meta">${e.message}</div></div>`;
+      }
+    }
+
+    // Search
+    function doSearch(index){
+      const q = document.getElementById('search').value.trim().toLowerCase();
+      if(!q) return renderList(index);
+      const filtered = index.filter(i=> (i.title+ ' '+ i.tags.join(' ') ).toLowerCase().includes(q));
+      renderList(filtered);
+    }
+
+    // Init
+    (async()=>{
+      const index = await loadIndex();
+      renderList(index);
+      document.getElementById('searchBtn').onclick = ()=>doSearch(index);
+      document.getElementById('search').addEventListener('keydown', (e)=>{ if(e.key==='Enter') doSearch(index) });
+
+      // If URL has hash -> open that item
+      const hid = window.location.hash.replace('#','');
+      if(hid){
+        const found = index.find(i=>i.id===hid);
+        if(found) openContent(found);
+      }
+
+      // Simple routing for nav links
+      document.querySelectorAll('[data-link]').forEach(a=>{
+        a.addEventListener('click', (ev)=>{
+          ev.preventDefault(); const target = a.getAttribute('href').replace('#','');
+          if(target==='home'){ document.getElementById('page-content').style.display='none'; window.scrollTo({top:0,behavior:'smooth'}) }
+          if(target==='notes'){ const f = index.filter(i=>i.type==='note'); renderList(f) }
+          if(target==='quizzes'){ const f = index.filter(i=>i.type==='quiz'); renderList(f) }
+          if(target==='past'){ const f = index.filter(i=>i.type==='past'); renderList(f) }
+          if(target==='resources'){ renderList(index.filter(i=>i.type!=='quiz')) }
+        })
+      })
+    })();
+  </script>
+
+  <!-- README for the repo (human-readable inside the file) -->
+  <!--
+    INSTRUCTIONS TO DEPLOY ON GITHUB PAGES
+    1. Create a new GitHub repo (for example: esunrise-education).
+    2. Add this file as index.html at the repo root.
+    3. Create a folder `content/` and inside it add markdown files and a pages.json file.
+       Example content/pages.json:
+       [
+         {"id":"note-bio-1","title":"Biology - Cell Structure","type":"note","path":"/content/biology-cell-structure.md","tags":["Biology","Cell"]}
+       ]
+    4. Commit and push. In repo settings -> Pages -> choose branch `main` and root `/` and save.
+    5. GitHub Pages site will be available at: https://yourusername.github.io/repo-name/
+
+    HOW TO ADD CONTENT
+    - Add markdown files to /content, add an entry to content/pages.json, commit & push.
+    - You can also directly create/upload files on GitHub web UI.
+
+    NOTES
+    - This template is intentionally small and static (no server). For big sites consider static site generators (Jekyll, Hugo) or GitHub Actions to build.
+    - You can customize styles in the <style> block.
+  -->
+</body>
+</html>
